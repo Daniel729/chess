@@ -1,23 +1,23 @@
 #[derive(Clone, Copy, Debug)]
-enum PieceTypes {
-    Pawn,
-    Rook,
-    Knight,
-    Bishop,
-    Queen,
-    King,
+enum Piece {
+    WhitePawn,
+    WhiteRook,
+    WhiteKnight,
+    WhiteBishop,
+    WhiteQueen,
+    WhiteKing,
+    BlackPawn,
+    BlackRook,
+    BlackKnight,
+    BlackBishop,
+    BlackQueen,
+    BlackKing,
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 enum Players {
     White,
     Black,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Piece {
-    piece_type: PieceTypes,
-    owner: Players,
 }
 
 mod mod_position {
@@ -208,21 +208,38 @@ macro_rules! find_moves_loops {
 }
 
 impl Piece {
+    fn owner(&self) -> Players {
+        match self {
+            WhitePawn => Players::White,
+            WhiteRook => Players::White,
+            WhiteKnight => Players::White,
+            WhiteBishop => Players::White,
+            WhiteQueen => Players::White,
+            WhiteKing => Players::White,
+            BlackPawn => Players::Black,
+            BlackRook => Players::Black,
+            BlackKnight => Players::Black,
+            BlackBishop => Players::Black,
+            BlackQueen => Players::Black,
+            BlackKing => Players::Black,
+        }
+    }
+
     fn get_moves(&self, game: &ChessGame, pos: Position) -> Vec<Move> {
         let mut moves = Vec::new();
-        match self.piece_type {
-            PieceTypes::Pawn => {
-                let first_row = match self.owner {
+        match self {
+            Piece::WhitePawn | Piece::BlackPawn => {
+                let first_row = match self.owner() {
                     Players::White => 1,
                     Players::Black => 6,
                 };
 
-                let normal_delta = match self.owner {
+                let normal_delta = match self.owner() {
                     Players::White => Position::new(1, 0),
                     Players::Black => Position::new(-1, 0),
                 };
 
-                let first_row_delta = match self.owner {
+                let first_row_delta = match self.owner() {
                     Players::White => Position::new(2, 0),
                     Players::Black => Position::new(-2, 0),
                 };
@@ -238,7 +255,7 @@ impl Piece {
                         captured_piece: None,
                     });
                 }
-                let side_deltas = match self.owner {
+                let side_deltas = match self.owner() {
                     Players::White => [Position::new(1, 1), Position::new(1, -1)],
                     Players::Black => [Position::new(-1, 1), Position::new(-1, -1)],
                 };
@@ -256,7 +273,7 @@ impl Piece {
                 }
                 for delta in side_deltas {
                     if let Some(place) = game.get_position(pos + delta) {
-                        if place.is_some_and(|piece| piece.owner != self.owner) {
+                        if place.is_some_and(|piece| piece.owner != self.owner()) {
                             moves.push(Move::Normal {
                                 piece: *self,
                                 start: pos,

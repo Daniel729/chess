@@ -18,6 +18,11 @@ pub enum Move {
 }
 
 #[derive(Clone)]
+struct Board<T> {
+    content: [[T; 8]; 8],
+}
+
+#[derive(Clone)]
 pub struct ChessGame {
     board: [[Option<Piece>; 8]; 8],
     pub move_stack: Vec<Move>, // debug
@@ -25,6 +30,7 @@ pub struct ChessGame {
 }
 
 mod mod_piece;
+
 use arrayvec::ArrayVec;
 use mod_piece::*;
 
@@ -37,6 +43,23 @@ impl Players {
             Self::White => Self::Black,
             Self::Black => Self::White,
         }
+    }
+}
+
+impl<T> Board<T> {
+    pub fn get(&self, position: Position) -> Option<&T> {
+        self.content
+            .get(position.row() as usize)
+            .and_then(|row| row.get(position.col() as usize))
+    }
+
+    fn set(&mut self, position: Position, new_item: T) {
+        self.content
+            .get_mut(position.row() as usize)
+            .and_then(|row| {
+                row.get_mut(position.col() as usize)
+                    .map(|item| *item = new_item)
+            });
     }
 }
 
@@ -155,6 +178,14 @@ impl ChessGame {
         }
 
         moves
+    }
+
+    pub fn get_targeted(&self, player: Players) -> Board<u8> {
+        let targeted = Board {
+            content: [[0; 8]; 8],
+        };
+
+        targeted
     }
 }
 
